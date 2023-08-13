@@ -3119,15 +3119,18 @@ int key_poll(){
 	int input_method = get_cw_input_method();
 
 	if (input_method == CW_IAMBIC || input_method == CW_IAMBICB){	
-		if (digitalRead(PTT) == LOW)
+		if (digitalRead(PTT) == LOW) {
 			key |= CW_DASH;
-		if (digitalRead(DASH) == LOW)
+			cw_symbol_read = false;
+		}
+		if (digitalRead(DASH) == LOW) {
 			key |= CW_DOT;
+			cw_symbol_read = false;
+		}
 	}
 	//straight key
 	else if (digitalRead(PTT) == LOW || digitalRead(DASH) == LOW)
 			key = CW_DOWN;
-
 	//printf("key %d\n", key);
 	return key;
 }

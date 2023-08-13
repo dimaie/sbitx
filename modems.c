@@ -113,7 +113,7 @@ int	ft8_mode = FT8_SEMI;
 pthread_t ft8_thread;
 int ft8_tx1st = 1;
 int ft8_repeat = 5;
-
+bool cw_symbol_read = true;
 int sbitx_ft8_encode(char *message, int32_t freq,  float *signal, bool is_ft4);
 
 void ft8_setmode(int config){
@@ -550,6 +550,10 @@ float cw_get_sample_new(){
 
 	if (keyup_count > 0 || keydown_count > 0){
 		cw_tx_until = millis_now + get_cw_delay(); 
+	} else if (!keyup_count && !keydown_count) {
+		if (!cw_symbol_read) {
+			cw_symbol_read = true;
+		}
 	}
 	return sample / 8;
 }
@@ -957,6 +961,10 @@ void modem_poll(int mode){
 		else if (tx_is_on && cw_tx_until < millis_now){
 				tx_off();
 		}
+
+		while (!cw_symbol_read) {
+			delay(10);
+		}
 		//printf("%d cw current %d\n", __LINE__, cw_current_symbol); 
 	break;
 
@@ -1008,7 +1016,7 @@ float modem_next_sample(int mode){
 	case MODE_CW:
 	case MODE_CWR:
 		sample = cw_get_sample_new();
-		cw_period = (12 *9600)/ get_wpm(); 		//as dot = 1.2/wpm
+		cw_period = (12 * 9600)/ get_wpm(); 		//as dot = 1.2/wpm
 		break;
 	}
 	return sample;
