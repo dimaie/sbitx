@@ -3120,17 +3120,16 @@ int key_poll(){
 
 	if (input_method == CW_IAMBIC || input_method == CW_IAMBICB){	
 		if (digitalRead(PTT) == LOW) {
-			key |= CW_DASH;
-			cw_symbol_read = false;
+			key = CW_DASH;
 		}
 		if (digitalRead(DASH) == LOW) {
-			key |= CW_DOT;
-			cw_symbol_read = false;
+			key = CW_DOT;
 		}
 	}
 	//straight key
 	else if (digitalRead(PTT) == LOW || digitalRead(DASH) == LOW)
 			key = CW_DOWN;
+
 	//printf("key %d\n", key);
 	return key;
 }
@@ -3581,6 +3580,10 @@ gboolean ui_tick(gpointer gook){
 			tx_on(TX_PTT);
 		else if (digitalRead(PTT) == HIGH && in_tx  == TX_PTT)
 			tx_off();
+	} else if (f && (!strcmp(f->value, "CW") || !strcmp(f->value, "CWR"))) {
+		if ((digitalRead(PTT) == LOW || digitalRead(DASH) == LOW) && in_tx == 0) {
+			tx_on(TX_PTT);
+		}
 	}
 
 	int scroll = enc_read(&enc_a);

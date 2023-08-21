@@ -113,7 +113,7 @@ int	ft8_mode = FT8_SEMI;
 pthread_t ft8_thread;
 int ft8_tx1st = 1;
 int ft8_repeat = 5;
-bool cw_symbol_read = true;
+
 int sbitx_ft8_encode(char *message, int32_t freq,  float *signal, bool is_ft4);
 
 void ft8_setmode(int config){
@@ -399,10 +399,9 @@ uint8_t cw_get_next_symbol(){
 int cw_read_key(){
 	char c;
 
-	//preferance to the keyer activity
+	cw_key_state = key_poll();
 	if (cw_key_state != CW_IDLE) {
 		//return cw_key_state;
-		cw_key_state = key_poll();
 		return cw_key_state;
 	}
 
@@ -439,7 +438,7 @@ float cw_get_sample_new(){
 	if (!keydown_count && !keyup_count){
 		millis_now = millis();
 		if (cw_tone.freq_hz != get_pitch())
-			(&cw_tone, get_pitch(), 0);
+			vfo_start(&cw_tone, get_pitch(), 0);
 	}
 
 	uint8_t symbol_now = cw_read_key();
@@ -550,10 +549,6 @@ float cw_get_sample_new(){
 
 	if (keyup_count > 0 || keydown_count > 0){
 		cw_tx_until = millis_now + get_cw_delay(); 
-	} else if (!keyup_count && !keydown_count) {
-		if (!cw_symbol_read) {
-			cw_symbol_read = true;
-		}
 	}
 	return sample / 8;
 }
@@ -950,8 +945,8 @@ void modem_poll(int mode){
 		ft8_poll(t % 60, tx_is_on);
 	break;
 	case MODE_CW:
-	case MODE_CWR:	
-		cw_key_state = key_poll();
+	case MODE_CWR:
+		//
 		if (!tx_is_on && (bytes_available || cw_key_state || (symbol_next && *symbol_next)) > 0){
 			tx_on(TX_SOFT);
 			millis_now = millis();
@@ -960,10 +955,6 @@ void modem_poll(int mode){
 		}
 		else if (tx_is_on && cw_tx_until < millis_now){
 				tx_off();
-		}
-
-		while (!cw_symbol_read) {
-			delay(10);
 		}
 		//printf("%d cw current %d\n", __LINE__, cw_current_symbol); 
 	break;
@@ -1016,7 +1007,7 @@ float modem_next_sample(int mode){
 	case MODE_CW:
 	case MODE_CWR:
 		sample = cw_get_sample_new();
-		cw_period = (12 * 9600)/ get_wpm(); 		//as dot = 1.2/wpm
+		cw_period = (12 *9600)/ get_wpm(); 		//as dot = 1.2/wpm
 		break;
 	}
 	return sample;

@@ -59,7 +59,6 @@ can guess that the time domain representation of the filter's shape will
 have continuos waveform. 
 
 */
-#include <stdbool.h>
 
 struct Queue
 {
@@ -254,4 +253,4 @@ int telnet_write(char *text);
 void telnet_close();
 double agc2(struct rx *r);
 FILE *wav_start_writing(const char* path);
-extern bool cw_symbol_read;
+
